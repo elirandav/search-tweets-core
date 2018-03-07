@@ -1,4 +1,4 @@
-/*
+package com.demo.tweets.core;/*
  * Copyright 2007 Yusuke Yamamoto
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@ import twitter4j.conf.ConfigurationBuilder;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -61,29 +62,40 @@ public class SearchTweets {
         return catalogProps;
     }
 
-    public void getTop5(String textToSearch) {
+    public List<String> getTop5(String textToSearch) {
         try {
             System.out.println("Start search: " + textToSearch);
             Query query = new Query(textToSearch);
             int maxItem = 5;
-            runSearch(query, maxItem);
+            return runSearch(query, maxItem);
         } catch (TwitterException e) {
             e.printStackTrace();
         }
-        System.out.println("Done search: " + textToSearch);
+
+        return null;
     }
 
-    private void runSearch(Query query, int maxItems) throws TwitterException {
-        QueryResult result;
+    private List<String> runSearch(Query query, int maxItems) throws TwitterException {
+        List<String> result = new ArrayList<String>();
+        QueryResult queryResult;
         do {
-            result = twitter.search(query);
-            List<Status> tweets = result.getTweets();
+            queryResult = twitter.search(query);
+            List<Status> tweets = queryResult.getTweets();
             for (Status tweet : tweets) {
-                System.out.println("@" + tweet.getUser().getScreenName() + " - " + tweet.getText());
+                String tweetText = "@" + tweet.getUser().getScreenName() + " - " + tweet.getText();
+                System.out.println(tweetText);
+                result.add(tweetText);
                 if (maxItems-- == 0) {
-                    return;
+                    return result;
                 }
             }
-        } while ((query = result.nextQuery()) != null);
+        } while ((query = queryResult.nextQuery()) != null);
+
+        System.out.println("Done search");
+        return result;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Dummy main");
     }
 }
